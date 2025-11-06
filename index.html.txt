@@ -113,21 +113,16 @@
   .progress{position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,var(--brand),var(--brand2));
             width:0%; z-index:30}
 
-  /* Video Responsive Container (para YouTube) */
+  /* Video Native Container */
   .video-container {
     overflow: hidden;
-    /* Aspect Ratio 16:9 */
-    padding-top: 56.25%; 
     position: relative;
     margin-bottom: 25px; /* Espacio después del video */
   }
-  .video-container iframe {
-    border: 0;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
+  .video-container video {
     width: 100%;
+    height: auto;
+    display: block;
     border-radius: var(--r);
     box-shadow: 0 8px 20px rgba(18,28,58,.1);
   }
@@ -165,6 +160,8 @@
   /* Gallery/Video Section (Ajustado para el video) */
   .gallery{margin-top:18px}
   
+  /* Eliminando estilos no necesarios del buscador/galería */
+  .drop input, .drop .hint, .actions, .thumbs {display: none;}
 </style>
 </head>
 <body>
@@ -217,7 +214,7 @@
 
     <figure class="chess-bubble left" aria-hidden="true" style="font-size:56px">♕</figure>
 
-    <p>Years later, and with the creation of the new technologies, specifically artificial intelligence, the struggle between man and machine makes its first appearance. In this case, a new legend of the game appears to show his supremacy, Garry Kasparov, another Soviet Chess player who stablished himself as the undisputed world chess champion for many years, demonstrating once again the chess quality that Soviet Union (currently known as the Russian School of Chess) proposed. Since Kasparov had no rivals, and this is the pinnacle of artificial intelligence, IBM proposed its artificial intelligence called “Deep Blue”, where in 1997 Kasparov and Deep Blue played several games. With Deep Blue finally emerging victorious. This was a significant historical momento for chess, because it was the day known as “the day the machine beat man”.</p>
+    <p>Years later, and with the creation of the new technologies, specifically artificial intelligence, the struggle between man and machine makes its first appearance. In this case, a new legend of the game appears to show his supremacy, Garry Kasparov, another Soviet Chess player who stablished himself as the undisputed world chess champion for many years, demonstrating once again the chess quality that Soviet Union (currently known as the Russian School of Chess) proposed. Since Kasparov had no rivals, and this is the pinnacle of artificial intelligence, IBM proposed its artificial intelligence called “Deep Blue”, where in 1997 Kasparov and Deep Blue played several games. With Deep Blue finally emerging victorious. This was a significant historical moment for chess, because it was the day known as “the day the machine beat man”.</p>
 
     <p>Currently, there’re many artificial intelligences such as Stockfish, AlphaZero, Komodo, etcetera, which possess analytical capabilities far superior to humans, so that not even the undisputed champion of the time, Magnus Carlsen can defeat them. That was a turning point in the world of chess, as it allowed this simple board game to be brought into the digital world, where platforms like Chess.com and Lichess.org are among the most popular for playing with everyone.</p>
 
@@ -232,16 +229,14 @@
 </section>
 
 <section id="gallery" class="wrap card gallery">
-  <h2>Featured Video: Top 10 Partidas Épicas de Bobby Fischer</h2>
-  <p class="muted">Este video de YouTube está disponible públicamente para incrustación.</p>
+  <h2>Featured Video: Top 5 Partidas Épicas de Bobby Fischer</h2>
+  <p class="muted">El video se carga desde tu archivo local. **Asegúrate de que el nombre del archivo sea `chess_video.mp4`**.</p>
 
   <div class="video-container" style="margin-top: 18px;">
-    <iframe 
-      src="https://www.youtube.com/embed/nU2W-b3n6-w" 
-      title="Top 10 Partidas Épicas de Bobby Fischer" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-      allowfullscreen>
-    </iframe>
+    <video controls poster="bg1.jpg">
+      <source src="chess_video.mp4" type="video/mp4">
+      <p>Tu navegador no soporta el tag de video HTML5. Asegúrate de que el archivo `chess_video.mp4` está en la misma carpeta.</p>
+    </video>
   </div>
   
 </section>
