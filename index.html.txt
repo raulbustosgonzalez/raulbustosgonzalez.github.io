@@ -113,16 +113,21 @@
   .progress{position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,var(--brand),var(--brand2));
             width:0%; z-index:30}
 
-  /* Video Native Container */
+  /* Video Responsive Container (Mantenemos el estilo aquí) */
   .video-container {
     overflow: hidden;
+    /* Aspect Ratio 16:9 */
+    padding-top: 56.25%; 
     position: relative;
     margin-bottom: 25px; /* Espacio después del video */
   }
-  .video-container video {
+  .video-container iframe {
+    border: 0;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
     width: 100%;
-    height: auto;
-    display: block;
     border-radius: var(--r);
     box-shadow: 0 8px 20px rgba(18,28,58,.1);
   }
@@ -159,9 +164,23 @@
 
   /* Gallery/Video Section (Ajustado para el video) */
   .gallery{margin-top:18px}
-  
-  /* Eliminando estilos no necesarios del buscador/galería */
-  .drop input, .drop .hint, .actions, .thumbs {display: none;}
+  .drop{ /* Este estilo se mantendrá pero no se usará el contenido */
+    border:1px dashed var(--line); border-radius:12px; padding:18px; text-align:center;
+    background:linear-gradient(180deg,#ffffff,#f8faff);
+  }
+  .drop input{display:none}
+  .drop .hint{color:var(--muted)}
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:14px}
+  .thumb{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .thumb figcaption{padding:8px 10px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  button.clear{background:#ffffff;border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer}
+
+  /* Mobile: hide bubbles to avoid crowding */
+  @media (max-width:820px){
+    .chess-bubble{ display:none }
+    body::after{ background-size:32px 32px }
+  }
 </style>
 </head>
 <body>
@@ -184,7 +203,7 @@
 <header>
   <nav>
     <div class="brand">The Chess History Blog</div>
-  </nav>
+    </nav>
 </header>
 
 <main class="wrap card">
@@ -229,19 +248,25 @@
 </section>
 
 <section id="gallery" class="wrap card gallery">
-  <h2>Featured Video: Top 5 Partidas Épicas de Bobby Fischer</h2>
-  <p class="muted">El video se carga desde tu archivo local. **Asegúrate de que el nombre del archivo sea `chess_video.mp4`**.</p>
+  <h2>Featured Video — Top 5 Partidas Épicas de Bobby Fischer</h2>
+  <p class="muted">A great selection of matches from the chess legend.</p>
 
   <div class="video-container" style="margin-top: 18px;">
-    <video controls poster="bg1.jpg">
-      <source src="chess_video.mp4" type="video/mp4">
-      <p>Tu navegador no soporta el tag de video HTML5. Asegúrate de que el archivo `chess_video.mp4` está en la misma carpeta.</p>
-    </video>
+    <iframe 
+      src="https://www.youtube.com/embed/TyjGCTe3Vd0" 
+      title="Top 5 Partidas Épicas de Bobby Fischer" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
   </div>
   
+  <div class="thumbs" id="thumbs" aria-live="polite"></div>
 </section>
 
 <script>
+  // La función 'year' no se usa ya que se eliminó el footer, pero se mantiene el código si se vuelve a necesitar
+  // document.getElementById('year').textContent = new Date().getFullYear();
+
   // Reading progress
   const progress = document.getElementById('progress');
   const onScroll = () => {
@@ -258,6 +283,39 @@
     const minutes = Math.max(1, Math.round(words/200)); // ~200 wpm
     document.getElementById('readingTime').textContent = `~${minutes} min read`;
   })();
+
+  // Image uploader (local only) - **Lógica eliminada ya que fue reemplazada por el video**
+  // La variable 'drop' y 'clearBtn' ya no se necesitan pero se dejan como comentarios de limpieza
+  /*
+  const fileInput = document.getElementById('file');
+  const drop = document.getElementById('drop');
+  const clearBtn = document.getElementById('clearBtn');
+  function addFiles(files){
+    [...files].forEach(f=>{
+      if(!f.type.startsWith('image/')) return;
+      const url = URL.createObjectURL(f);
+      const fig = document.createElement('figure');
+      fig.className = 'thumb';
+      const img = document.createElement('img');
+      img.src = url; img.alt = f.name;
+      const cap = document.createElement('figcaption');
+      cap.textContent = f.name;
+      fig.appendChild(img); fig.appendChild(cap);
+      thumbs.appendChild(fig);
+    });
+  }
+  fileInput.addEventListener('change', e => addFiles(e.target.files));
+  ;['dragenter','dragover'].forEach(evt => {
+    drop.addEventListener(evt, e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; drop.style.borderColor = '#9bb0ff'; }, false);
+  });
+  ;['dragleave','drop'].forEach(evt => {
+    drop.addEventListener(evt, e => { e.preventDefault(); drop.style.borderColor = 'var(--line)'; }, false);
+  });
+  drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+  clearBtn.addEventListener('click', () => { thumbs.innerHTML=''; fileInput.value=''; });
+  */
+  const thumbs = document.getElementById('thumbs');
+
 
   // Background slideshow (auto-rotate)
   const slides = Array.from(document.querySelectorAll('.bg-img'));
