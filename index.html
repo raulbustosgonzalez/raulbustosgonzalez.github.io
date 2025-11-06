@@ -113,25 +113,6 @@
   .progress{position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,var(--brand),var(--brand2));
             width:0%; z-index:30}
 
-  /* Video Responsive Container (Mantenemos el estilo aquí) */
-  .video-container {
-    overflow: hidden;
-    /* Aspect Ratio 16:9 */
-    padding-top: 56.25%; 
-    position: relative;
-    margin-bottom: 25px; /* Espacio después del video */
-  }
-  .video-container iframe {
-    border: 0;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-    border-radius: var(--r);
-    box-shadow: 0 8px 20px rgba(18,28,58,.1);
-  }
-
   /* “Chess bubbles” floating around text (text wraps using shape-outside) */
   .chess-bubble{
     float:left; width:150px; height:150px; margin:8px 18px 14px 0; border-radius:50%;
@@ -162,9 +143,9 @@
   article h2{margin:1.2em 0 .5em; font-size:clamp(22px,3.5vw,30px)}
   article p{line-height:1.8}
 
-  /* Gallery/Video Section (Ajustado para el video) */
+  /* Gallery uploader */
   .gallery{margin-top:18px}
-  .drop{ /* Este estilo se mantendrá pero no se usará el contenido */
+  .drop{
     border:1px dashed var(--line); border-radius:12px; padding:18px; text-align:center;
     background:linear-gradient(180deg,#ffffff,#f8faff);
   }
@@ -210,8 +191,7 @@
   <h1 class="title">From Ancient Origins to AI: how chess shaped (and was shaped by) the world</h1>
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px">
     <span class="pill-ghost" id="readingTime">~6 min read</span>
-    <span class="pill-ghost">by You</span>
-    <a class="cta" href="#article">Start reading</a>
+    <span class="pill-ghost">by Raúl Bustos</span>
   </div>
 </main>
 
@@ -247,84 +227,46 @@
   </article>
 </section>
 
-<section id="gallery" class="wrap card gallery">
-  <h2>Featured Video — Top 5 Partidas Épicas de Bobby Fischer</h2>
-  <p class="muted">A great selection of matches from the chess legend.</p>
-
-  <div class="video-container" style="margin-top: 18px;">
-    <iframe 
-      src="https://www.youtube.com/embed/TyjGCTe3Vd0" 
-      title="Top 5 Partidas Épicas de Bobby Fischer" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-      allowfullscreen>
-    </iframe>
-  </div>
-  
-  <div class="thumbs" id="thumbs" aria-live="polite"></div>
-</section>
+<p class="wrap" style="text-align:center;color:var(--muted);margin-bottom:28px">
+  © <span id="year"></span> Created and written by Raúl Bustos
+</p>
 
 <script>
-  // La función 'year' no se usa ya que se eliminó el footer, pero se mantiene el código si se vuelve a necesitar
-  // document.getElementById('year').textContent = new Date().getFullYear();
+  // Year
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Reading progress
-  const progress = document.getElementById('progress');
-  const onScroll = () => {
-    const h = document.documentElement;
-    const scrolled = (h.scrollTop)/(h.scrollHeight - h.clientHeight);
-    progress.style.width = (scrolled*100).toFixed(2) + '%';
-  };
-  document.addEventListener('scroll', onScroll, {passive:true});
+  // Reading progress
+  const progress = document.getElementById('progress');
+  const onScroll = () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop)/(h.scrollHeight - h.clientHeight);
+    progress.style.width = (scrolled*100).toFixed(2) + '%';
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
 
-  // Estimate reading time
-  (function(){
-    const article = document.querySelector('#article article');
-    const words = article.innerText.trim().split(/\s+/).length;
-    const minutes = Math.max(1, Math.round(words/200)); // ~200 wpm
-    document.getElementById('readingTime').textContent = `~${minutes} min read`;
-  })();
+  // Estimate reading time
+  (function(){
+    const article = document.querySelector('#article article');
+    const words = article.innerText.trim().split(/\s+/).length;
+    const minutes = Math.max(1, Math.round(words/200)); // ~200 wpm
+    document.getElementById('readingTime').textContent = `~${minutes} min read`;
+  })();
 
-  // Image uploader (local only) - **Lógica eliminada ya que fue reemplazada por el video**
-  // La variable 'drop' y 'clearBtn' ya no se necesitan pero se dejan como comentarios de limpieza
-  /*
-  const fileInput = document.getElementById('file');
-  const drop = document.getElementById('drop');
-  const clearBtn = document.getElementById('clearBtn');
-  function addFiles(files){
-    [...files].forEach(f=>{
-      if(!f.type.startsWith('image/')) return;
-      const url = URL.createObjectURL(f);
-      const fig = document.createElement('figure');
-      fig.className = 'thumb';
-      const img = document.createElement('img');
-      img.src = url; img.alt = f.name;
-      const cap = document.createElement('figcaption');
-      cap.textContent = f.name;
-      fig.appendChild(img); fig.appendChild(cap);
-      thumbs.appendChild(fig);
-    });
-  }
-  fileInput.addEventListener('change', e => addFiles(e.target.files));
-  ;['dragenter','dragover'].forEach(evt => {
-    drop.addEventListener(evt, e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; drop.style.borderColor = '#9bb0ff'; }, false);
-  });
-  ;['dragleave','drop'].forEach(evt => {
-    drop.addEventListener(evt, e => { e.preventDefault(); drop.style.borderColor = 'var(--line)'; }, false);
-  });
-  drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
-  clearBtn.addEventListener('click', () => { thumbs.innerHTML=''; fileInput.value=''; });
-  */
-  const thumbs = document.getElementById('thumbs');
+  // Se elimina todo el código JavaScript relacionado con el uploader/galería de imágenes:
+  // const fileInput = document.getElementById('file');
+  // const drop = document.getElementById('drop');
+  // const thumbs = document.getElementById('thumbs');
+  // const clearBtn = document.getElementById('clearBtn');
+  // ... y todas sus funciones y listeners ...
 
-
-  // Background slideshow (auto-rotate)
-  const slides = Array.from(document.querySelectorAll('.bg-img'));
-  let i = 0;
-  setInterval(() => {
-    slides[i].classList.remove('show');
-    i = (i + 1) % slides.length;
-    slides[i].classList.add('show');
-  }, 7000); // 7s per image
+  // Background slideshow (auto-rotate)
+  const slides = Array.from(document.querySelectorAll('.bg-img'));
+  let i = 0;
+  setInterval(() => {
+    slides[i].classList.remove('show');
+    i = (i + 1) % slides.length;
+    slides[i].classList.add('show');
+  }, 7000); // 7s per image
 </script>
 </body>
 </html>
