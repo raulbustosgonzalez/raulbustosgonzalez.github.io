@@ -13,19 +13,16 @@
 
 <style>
   :root{
-    /* Palette (brighter than before) */
-    --ink:#0c1022;            /* primary text (dark) */
-    --ink-inv:#f8fafc;        /* text on dark */
+    --ink:#0c1022;
+    --ink-inv:#f8fafc;
     --muted:#51607a;
     --brand:#3ddcff;
     --brand2:#8b5cf6;
     --line:#cfd6e4;
     --max:1080px;
     --r:16px;
-
-    /* Kasparov vs Deep Blue framing (bg2.jpg) */
-    --kasparov-x: 30%;   /* move focus left (Kasparov) */
-    --kasparov-zoom: 1;  /* sin zoom */
+    --kasparov-x: 30%;
+    --kasparov-zoom: 1;
   }
 
   *{box-sizing:border-box}
@@ -33,7 +30,6 @@
   body{
     color:var(--ink);
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif;
-    /* Opacidad de fondo principal ajustada para ver la imagen */
     background:
       radial-gradient(1200px 600px at 10% -10%, #dff7ff 10%, transparent 60%),
       radial-gradient(1000px 500px at 120% 0%, #efe4ff 10%, transparent 60%),
@@ -41,9 +37,8 @@
     background-attachment:scroll,scroll,scroll;
     background-position:center,center,center;
   }
-  /* Fullscreen background slideshow (behind everything) */
   .bg{position:fixed; inset:0; z-index:-2; overflow:hidden}
-  .bg::after{ /* Opacidad del velo reducida para ver la imagen */
+  .bg::after{
     content:""; position:absolute; inset:0; pointer-events:none;
     background:
       radial-gradient(1200px 600px at -10% -10%, rgba(56,189,248,.14), transparent 60%),
@@ -57,36 +52,24 @@
   }
   .bg-img.show{opacity:1}
   
-  /* AJUSTES DE ENCUADRE para cada imagen */
-  #bg1{ /* Fischer */
-    object-position: 75% center; /* Enfoca a la derecha (Fischer) */
-  }
-  #bg2{ /* Kasparov */
-    object-position: var(--kasparov-x) center;
-    transform: scale(var(--kasparov-zoom));
-    transform-origin: center;
-  }
-  #bg3{ /* Polgar */
-    object-position: center top; /* Enfoca arriba (caras) */
-  }
+  #bg1{ object-position: 75% center; }
+  #bg2{ object-position: var(--kasparov-x) center; transform: scale(var(--kasparov-zoom)); transform-origin: center; }
+  #bg3{ object-position: center top; }
 
   @media (max-width:900px){
     #bg2{ object-position: 30% center; }
     #bg1{ object-position: 70% center; }
   }
 
-  /* Subtle checkered overlay for chess vibe */
   body::after{
     content:""; position:fixed; inset:0; pointer-events:none;
-    background:
-      conic-gradient(#e7ecf5 0 25%, transparent 0 50%, #e7ecf5 0 75%, transparent 0) 0 0/40px 40px;
+    background: conic-gradient(#e7ecf5 0 25%, transparent 0 50%, #e7ecf5 0 75%, transparent 0) 0 0/40px 40px;
     mix-blend-mode:multiply; opacity:.05; z-index:0;
   }
 
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block;height:auto}
 
-  /* Header (glass) */
   header{
     position:sticky; top:0; z-index:20;
     backdrop-filter:blur(10px) saturate(120%);
@@ -98,10 +81,8 @@
   .pill{display:inline-flex; gap:.5rem; align-items:center; padding:.55rem .85rem; border-radius:999px;
         border:1px solid var(--line); background:rgba(255,255,255,.7);}
 
-  /* Layout */
   .wrap{max-width:var(--max); margin:auto; padding:32px 20px; position:relative; z-index:1}
   .card{
-    /* Opacidad del card reducida para ver el fondo */
     background:rgba(255,255,255,.70);
     border:1px solid var(--line);
     border-radius:var(--r);
@@ -114,11 +95,8 @@
         background:linear-gradient(120deg,var(--brand),var(--brand2)); color:var(--ink-inv); font-weight:800; border:none; box-shadow:0 8px 22px rgba(139,92,246,.25)}
   .pill-ghost{display:inline-flex; gap:.6rem; align-items:center; padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:#ffffffa6}
 
-  /* Reading progress */
-  .progress{position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,var(--brand),var(--brand2));
-            width:0%; z-index:30}
+  .progress{position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,var(--brand),var(--brand2)); width:0%; z-index:30}
 
-  /* “Chess bubbles” floating around text (text wraps using shape-outside) */
   .chess-bubble{
     float:left; width:150px; height:150px; margin:8px 18px 14px 0; border-radius:50%;
     border:1px solid var(--line); background:radial-gradient(circle at 30% 30%, #ffffff 0%, #f3f6ff 45%, #eef2ff 100%);
@@ -129,7 +107,6 @@
   .chess-bubble.right{ float:right; margin:8px 0 14px 18px; animation-delay:1.2s }
   @keyframes bob{ 0%,100%{ transform:translateY(-4px) rotate(-6deg) } 50%{ transform:translateY(6px) rotate(6deg) } }
 
-  /* Animated floaters along the edges — now clearer & crisper */
   .floaters{position:fixed; inset:0; pointer-events:none; z-index:0}
   .floater{
     position:absolute; font-size:clamp(32px,5vw,60px); opacity:.32; color:#1a2648; line-height:1;
@@ -148,21 +125,6 @@
   article h2{margin:1.2em 0 .5em; font-size:clamp(22px,3.5vw,30px)}
   article p{line-height:1.8}
 
-  /* Gallery uploader */
-  .gallery{margin-top:18px}
-  .drop{
-    border:1px dashed var(--line); border-radius:12px; padding:18px; text-align:center;
-    background:linear-gradient(180deg,#ffffff,#f8faff);
-  }
-  .drop input{display:none}
-  .drop .hint{color:var(--muted)}
-  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:14px}
-  .thumb{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
-  .thumb figcaption{padding:8px 10px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
-  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-  button.clear{background:#ffffff;border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer}
-
-  /* Chess Game Styles */
   .board-container {
     margin-top: 40px;
     padding: 20px;
@@ -176,7 +138,7 @@
   }
   #myBoard {
     width: 100%;
-    max-width: 400px; /* Tamaño máximo del tablero */
+    max-width: 400px;
   }
   .btn-game {
     cursor: pointer;
@@ -195,7 +157,11 @@
     text-align: center;
   }
 
-  /* Mobile: hide bubbles to avoid crowding */
+  /* Highlight para la casilla seleccionada al hacer clic */
+  .highlight-square {
+    box-shadow: inset 0 0 3px 3px yellow;
+  }
+
   @media (max-width:820px){
     .chess-bubble{ display:none }
     body::after{ background-size:32px 32px }
@@ -226,7 +192,7 @@
 </header>
 
 <main class="wrap card">
-  <h1 class="title">From Ancient Origins to AI: how chess shaped the world</h1>
+  <h1 class="title">From Ancient Origins to AI: how chess shaped (and was shaped by) the world</h1>
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px">
     <span class="pill-ghost" id="readingTime">~6 min read</span>
     <span class="pill-ghost">by Raúl Bustos</span>
@@ -274,8 +240,8 @@
       </iframe>
     </div>
     <div class="board-container">
-        <h3 style="margin:0">Put in practice what you have learned!</h3>
-        <p class="muted" style="margin:0; font-size:0.9rem">Play against yourself or analyze a position.</p>
+        <h3 style="margin:0">Try a quick game!</h3>
+        <p class="muted" style="margin:0; font-size:0.9rem">Drag pieces OR click square to move.</p>
         <div id="myBoard"></div>
         <div class="game-status" id="status">White to move</div>
         <button class="btn-game" id="resetBtn">Start Over</button>
@@ -308,29 +274,32 @@
   (function(){
     const article = document.querySelector('#article article');
     const words = article.innerText.trim().split(/\s+/).length;
-    const minutes = Math.max(1, Math.round(words/200)); // ~200 wpm
+    const minutes = Math.max(1, Math.round(words/200));
     document.getElementById('readingTime').textContent = `~${minutes} min read`;
   })();
 
-  // Background slideshow (auto-rotate)
+  // Background slideshow
   const slides = Array.from(document.querySelectorAll('.bg-img'));
   let i = 0;
   setInterval(() => {
     slides[i].classList.remove('show');
     i = (i + 1) % slides.length;
     slides[i].classList.add('show');
-  }, 7000); // 7s per image
+  }, 7000);
 
-  /* --- CÓDIGO DEL TABLERO DE AJEDREZ --- */
-  // Inicializamos la lógica del juego (Chess.js) y el tablero UI (Chessboard.js)
+  /* --- CÓDIGO DEL AJEDREZ (Arrastrar + Clic) --- */
   var game = new Chess();
   var board = null;
   var $status = $('#status');
+  
+  // Variables para la lógica de Clic
+  var whiteSquareGrey = '#a9a9a9';
+  var blackSquareGrey = '#696969';
+  var selectedSquare = null; // Guardará la casilla del primer clic
 
+  // --- Funciones para Drag & Drop (Arrastrar) ---
   function onDragStart (source, piece, position, orientation) {
-    // No permitir mover si el juego terminó
     if (game.game_over()) return false;
-    // Solo permitir mover piezas del color que le toca
     if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
         (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
       return false;
@@ -338,30 +307,93 @@
   }
 
   function onDrop (source, target) {
-    // Verificar si el movimiento es legal
+    // Intentar mover
     var move = game.move({
       from: source,
       to: target,
-      promotion: 'q' // NOTE: siempre promueve a reina por simplicidad
+      promotion: 'q'
     });
 
-    // Si es ilegal, la pieza vuelve a su lugar (snapback)
     if (move === null) return 'snapback';
 
+    // Si el movimiento fue exitoso por arrastre, limpiamos cualquier selección de clic pendiente
+    removeGreySquares();
+    selectedSquare = null;
     updateStatus();
   }
 
-  // Actualizar la posición del tablero UI después de enroques o capturas
   function onSnapEnd () {
     board.position(game.fen());
   }
 
+  // --- Funciones Auxiliares para el Click ---
+  function removeGreySquares () {
+    $('#myBoard .square-55d63').css('background', '');
+  }
+
+  function greySquare (square) {
+    var $square = $('#myBoard .square-' + square);
+    var background = whiteSquareGrey;
+    if ($square.hasClass('black-3c85d')) {
+      background = blackSquareGrey;
+    }
+    $square.css('background', background);
+  }
+
+  // --- Manejo del evento CLIC en el tablero ---
+  $('#myBoard').on('click', '.square-55d63', function () {
+    var square = $(this).data('square');
+
+    // Caso 1: Si ya habíamos seleccionado una pieza antes
+    if (selectedSquare !== null) {
+      // Intentamos mover a la casilla donde acabamos de hacer clic
+      var move = game.move({
+        from: selectedSquare,
+        to: square,
+        promotion: 'q'
+      });
+
+      // Si el movimiento es válido (move no es null)
+      if (move !== null) {
+        board.position(game.fen());
+        removeGreySquares();
+        selectedSquare = null;
+        updateStatus();
+        return; // Terminamos
+      } 
+      // Si el movimiento no es válido, verificamos si el usuario hizo clic en otra pieza propia
+      else {
+        // Obtenemos la pieza en la nueva casilla
+        var pieceAtClick = game.get(square);
+        // Si hay una pieza y es del color del turno actual, cambiamos la selección
+        if (pieceAtClick && pieceAtClick.color === game.turn()) {
+           removeGreySquares();
+           selectedSquare = square;
+           greySquare(selectedSquare);
+           return;
+        }
+      }
+      
+      // Si llegamos aquí, fue un clic inválido (casilla vacía o movimiento ilegal) -> Deseleccionamos todo
+      removeGreySquares();
+      selectedSquare = null;
+    } 
+    
+    // Caso 2: No había nada seleccionado antes (Primer clic)
+    else {
+      var piece = game.get(square);
+      // Solo seleccionamos si hay una pieza y es su turno
+      if (piece && piece.color === game.turn()) {
+        selectedSquare = square;
+        greySquare(selectedSquare);
+      }
+    }
+  });
+
   function updateStatus () {
     var status = '';
     var moveColor = 'White';
-    if (game.turn() === 'b') {
-      moveColor = 'Black';
-    }
+    if (game.turn() === 'b') moveColor = 'Black';
 
     if (game.in_checkmate()) {
       status = 'Game over, ' + moveColor + ' is in checkmate.';
@@ -369,35 +401,32 @@
       status = 'Game over, drawn position';
     } else {
       status = moveColor + ' to move';
-      if (game.in_check()) {
-        status += ', ' + moveColor + ' is in check';
-      }
+      if (game.in_check()) status += ', ' + moveColor + ' is in check';
     }
     $status.text(status);
   }
 
   var config = {
-    draggable: true,
+    draggable: true, // Mantiene el arrastre activado
     position: 'start',
     onDragStart: onDragStart,
     onDrop: onDrop,
     onSnapEnd: onSnapEnd,
-    // ********* CORRECCIÓN DE LA RUTA PARA LAS IMÁGENES *********
-    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
-    // ******************************************************************
+    // Ruta corregida (CDN robusto)
+    pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@master/website/img/chesspieces/wikipedia/{piece}.png'
   };
 
   board = Chessboard('myBoard', config);
   updateStatus();
 
-  // Botón reset
   $('#resetBtn').on('click', function() {
     game.reset();
     board.start();
+    removeGreySquares();
+    selectedSquare = null;
     updateStatus();
   });
 
-  // Hacer el tablero responsive si cambia el tamaño de la ventana
   $(window).resize(board.resize);
 </script>
 </body>
