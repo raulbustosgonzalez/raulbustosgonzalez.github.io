@@ -381,7 +381,10 @@
     position: 'start',
     onDragStart: onDragStart,
     onDrop: onDrop,
-    onSnapEnd: onSnapEnd
+    onSnapEnd: onSnapEnd,
+    // ********* RUTA CORREGIDA PARA LAS IMÁGENES DE LAS PIEZAS *********
+    pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png'
+    // ******************************************************************
   };
 
   board = Chessboard('myBoard', config);
