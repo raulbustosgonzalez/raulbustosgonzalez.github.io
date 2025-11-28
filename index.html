@@ -9,8 +9,8 @@
 <style>
   :root{
     /* Palette (brighter than before) */
-    --ink:#0c1022;           /* primary text (dark) */
-    --ink-inv:#f8fafc;       /* text on dark */
+    --ink:#0c1022;            /* primary text (dark) */
+    --ink-inv:#f8fafc;        /* text on dark */
     --muted:#51607a;
     --brand:#3ddcff;
     --brand2:#8b5cf6;
@@ -106,7 +106,7 @@
   .title{font-size:clamp(30px,5vw,52px); line-height:1.05; margin:.2em 0 .4em}
   .muted{color:var(--muted)}
   .cta{display:inline-flex; gap:.6rem; align-items:center; padding:12px 16px; border-radius:12px;
-       background:linear-gradient(120deg,var(--brand),var(--brand2)); color:var(--ink-inv); font-weight:800; border:none; box-shadow:0 8px 22px rgba(139,92,246,.25)}
+        background:linear-gradient(120deg,var(--brand),var(--brand2)); color:var(--ink-inv); font-weight:800; border:none; box-shadow:0 8px 22px rgba(139,92,246,.25)}
   .pill-ghost{display:inline-flex; gap:.6rem; align-items:center; padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:#ffffffa6}
 
   /* Reading progress */
@@ -224,49 +224,60 @@
     <p>Today, the chess revolution has motivated scientist to study the benefits of chess for the entire population to integrate it into public policy in countries to promote people’s cognitive development. It has been shown that 12 weeks of chess training with two 60-minute sessions improved cognition and quality of life in older adults, which is a key result for the regulation of stimulating cognitive activity through chess, which is a key agent for maintaining a good cognitive, social, and psychological state during the aging process (Cibeira, 2021). This result is crucial because the rates of mental illness in Chile are not encouraging. Efforts have been focused solely on treating the disease buy not much on preventing it. The prevalence of dementia at age 60 is estimated to be 1% doubling every 5 years, reaching nearly 30% by age 80 (MINSAL, 2023)</p>
 
     <p>There is still no law in force in Chile that allows for the inclusion of extracurricular activities in schools beyond regular classes, and there’s a lack of research at the national level on how the inclusion of chess in society would help reduce the prevalence of mental illness, especially among older adults. However, institutions such as the IND (National Sports Institute) include chess as a sport at the community, regional, and national levels. Together with AJEFECH (National Chess Federation of Chile), they allow the creation of national tournament to promote chess.</p>
-  </article>
+
+    <div style="margin-top: 2rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); background: #000;">
+      <iframe 
+        src="https://www.youtube.com/embed/8dG5zw3QAOI" 
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+        title="YouTube video player" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        allowfullscreen>
+      </iframe>
+    </div>
+    </article>
 </section>
 
 <p class="wrap" style="text-align:center;color:var(--muted);margin-bottom:28px">
-  © <span id="year"></span> Created and written by Raúl Bustos
+  © <span id="year"></span> Created and written by Raúl Bustos
 </p>
 
 <script>
-  // Year
-  document.getElementById('year').textContent = new Date().getFullYear();
+  // Year
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Reading progress
-  const progress = document.getElementById('progress');
-  const onScroll = () => {
-    const h = document.documentElement;
-    const scrolled = (h.scrollTop)/(h.scrollHeight - h.clientHeight);
-    progress.style.width = (scrolled*100).toFixed(2) + '%';
-  };
-  document.addEventListener('scroll', onScroll, {passive:true});
+  // Reading progress
+  const progress = document.getElementById('progress');
+  const onScroll = () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop)/(h.scrollHeight - h.clientHeight);
+    progress.style.width = (scrolled*100).toFixed(2) + '%';
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
 
-  // Estimate reading time
-  (function(){
-    const article = document.querySelector('#article article');
-    const words = article.innerText.trim().split(/\s+/).length;
-    const minutes = Math.max(1, Math.round(words/200)); // ~200 wpm
-    document.getElementById('readingTime').textContent = `~${minutes} min read`;
-  })();
+  // Estimate reading time
+  (function(){
+    const article = document.querySelector('#article article');
+    const words = article.innerText.trim().split(/\s+/).length;
+    const minutes = Math.max(1, Math.round(words/200)); // ~200 wpm
+    document.getElementById('readingTime').textContent = `~${minutes} min read`;
+  })();
 
-  // Se elimina todo el código JavaScript relacionado con el uploader/galería de imágenes:
-  // const fileInput = document.getElementById('file');
-  // const drop = document.getElementById('drop');
-  // const thumbs = document.getElementById('thumbs');
-  // const clearBtn = document.getElementById('clearBtn');
-  // ... y todas sus funciones y listeners ...
+  // Se elimina todo el código JavaScript relacionado con el uploader/galería de imágenes:
+  // const fileInput = document.getElementById('file');
+  // const drop = document.getElementById('drop');
+  // const thumbs = document.getElementById('thumbs');
+  // const clearBtn = document.getElementById('clearBtn');
+  // ... y todas sus funciones y listeners ...
 
-  // Background slideshow (auto-rotate)
-  const slides = Array.from(document.querySelectorAll('.bg-img'));
-  let i = 0;
-  setInterval(() => {
-    slides[i].classList.remove('show');
-    i = (i + 1) % slides.length;
-    slides[i].classList.add('show');
-  }, 7000); // 7s per image
+  // Background slideshow (auto-rotate)
+  const slides = Array.from(document.querySelectorAll('.bg-img'));
+  let i = 0;
+  setInterval(() => {
+    slides[i].classList.remove('show');
+    i = (i + 1) % slides.length;
+    slides[i].classList.add('show');
+  }, 7000); // 7s per image
 </script>
 </body>
 </html>
