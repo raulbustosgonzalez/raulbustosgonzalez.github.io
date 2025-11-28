@@ -157,7 +157,7 @@
     text-align: center;
   }
 
-  /* Highlight para la casilla seleccionada al hacer clic */
+  /* Highlight Class para selección */
   .highlight-square {
     box-shadow: inset 0 0 3px 3px yellow;
   }
@@ -241,7 +241,7 @@
     </div>
     <div class="board-container">
         <h3 style="margin:0">Try a quick game!</h3>
-        <p class="muted" style="margin:0; font-size:0.9rem">Drag pieces OR click square to move.</p>
+        <p class="muted" style="margin:0; font-size:0.9rem">Drag pieces OR click to move.</p>
         <div id="myBoard"></div>
         <div class="game-status" id="status">White to move</div>
         <button class="btn-game" id="resetBtn">Start Over</button>
@@ -287,106 +287,118 @@
     slides[i].classList.add('show');
   }, 7000);
 
-  /* --- CÓDIGO DEL AJEDREZ (Arrastrar + Clic) --- */
+  /* --- CÓDIGO DEL AJEDREZ (HÍBRIDO: Drag + Click Robustos) --- */
   var game = new Chess();
   var board = null;
   var $status = $('#status');
-  
-  // Variables para la lógica de Clic
-  var whiteSquareGrey = '#a9a9a9';
-  var blackSquareGrey = '#696969';
-  var selectedSquare = null; // Guardará la casilla del primer clic
+  var selectedSquare = null; // Estado global para saber si tenemos una pieza "en mano"
 
-  // --- Funciones para Drag & Drop (Arrastrar) ---
+  function removeHighlights () {
+    $('#myBoard .square-55d63').css('background', '');
+  }
+
+  function highlightSquare (square) {
+    var $square = $('#myBoard .square-' + square);
+    var background = '#a9a9a9'; // Gris para blancas
+    if ($square.hasClass('black-3c85d')) {
+      background = '#696969'; // Gris oscuro para negras
+    }
+    $square.css('background', background);
+  }
+
+  // --- 1. Lógica al empezar a arrastrar o hacer clic en una pieza ---
   function onDragStart (source, piece, position, orientation) {
     if (game.game_over()) return false;
+    
+    // Solo permitir mover piezas del turno actual
     if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
         (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
       return false;
     }
+
+    // CASO ESPECIAL: Si ya tenemos una pieza seleccionada y hacemos clic en OTRA pieza (intentando capturar)
+    // El "DragStart" se dispara porque hacemos clic en la pieza enemiga.
+    if (selectedSquare && selectedSquare !== source) {
+      // Intentamos mover de la seleccionada a esta nueva pieza (captura)
+      var move = game.move({
+        from: selectedSquare,
+        to: source,
+        promotion: 'q'
+      });
+      
+      if (move !== null) {
+        // ¡Era una captura válida! Ejecutamos el movimiento visualmente
+        board.position(game.fen());
+        removeHighlights();
+        selectedSquare = null;
+        updateStatus();
+        return false; // Cancelamos el arrastre de la pieza enemiga porque ya la comimos
+      } else {
+        // No era una captura válida, así que asumimos que el usuario cambió de opinión
+        // y quiere seleccionar esta nueva pieza.
+        removeHighlights();
+        selectedSquare = source;
+        highlightSquare(source);
+        return true; // Permitimos arrastrar esta nueva pieza
+      }
+    }
+
+    // Si no había nada seleccionado, seleccionamos esta pieza
+    selectedSquare = source;
+    highlightSquare(source);
+    return true;
   }
 
+  // --- 2. Lógica al soltar la pieza ---
   function onDrop (source, target) {
-    // Intentar mover
-    var move = game.move({
-      from: source,
-      to: target,
-      promotion: 'q'
-    });
+    // Si soltamos la pieza en un lugar diferente al origen (fue un arrastre real)
+    if (source !== target) {
+      var move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q'
+      });
 
-    if (move === null) return 'snapback';
+      if (move === null) {
+        return 'snapback'; // Movimiento ilegal, volver
+      }
 
-    // Si el movimiento fue exitoso por arrastre, limpiamos cualquier selección de clic pendiente
-    removeGreySquares();
-    selectedSquare = null;
-    updateStatus();
+      // Movimiento legal: limpiar selección
+      removeHighlights();
+      selectedSquare = null;
+      updateStatus();
+    } 
+    // Si source === target, significa que el usuario hizo "Clic" (arrastró 0 píxeles)
+    // En este caso, NO limpiamos la selección, la dejamos resaltada para el segundo clic.
+    else {
+      // Mantenemos selectedSquare y el highlight
+    }
   }
 
   function onSnapEnd () {
     board.position(game.fen());
   }
 
-  // --- Funciones Auxiliares para el Click ---
-  function removeGreySquares () {
-    $('#myBoard .square-55d63').css('background', '');
-  }
-
-  function greySquare (square) {
-    var $square = $('#myBoard .square-' + square);
-    var background = whiteSquareGrey;
-    if ($square.hasClass('black-3c85d')) {
-      background = blackSquareGrey;
-    }
-    $square.css('background', background);
-  }
-
-  // --- Manejo del evento CLIC en el tablero ---
+  // --- 3. Lógica para hacer clic en casillas VACÍAS ---
+  // El evento 'click' sí funciona en casillas vacías porque no son 'draggables'
   $('#myBoard').on('click', '.square-55d63', function () {
     var square = $(this).data('square');
-
-    // Caso 1: Si ya habíamos seleccionado una pieza antes
-    if (selectedSquare !== null) {
-      // Intentamos mover a la casilla donde acabamos de hacer clic
+    
+    // Si tenemos una pieza seleccionada y hacemos clic en una casilla vacía
+    if (selectedSquare) {
       var move = game.move({
         from: selectedSquare,
         to: square,
         promotion: 'q'
       });
 
-      // Si el movimiento es válido (move no es null)
       if (move !== null) {
         board.position(game.fen());
-        removeGreySquares();
+        removeHighlights();
         selectedSquare = null;
         updateStatus();
-        return; // Terminamos
-      } 
-      // Si el movimiento no es válido, verificamos si el usuario hizo clic en otra pieza propia
-      else {
-        // Obtenemos la pieza en la nueva casilla
-        var pieceAtClick = game.get(square);
-        // Si hay una pieza y es del color del turno actual, cambiamos la selección
-        if (pieceAtClick && pieceAtClick.color === game.turn()) {
-           removeGreySquares();
-           selectedSquare = square;
-           greySquare(selectedSquare);
-           return;
-        }
       }
-      
-      // Si llegamos aquí, fue un clic inválido (casilla vacía o movimiento ilegal) -> Deseleccionamos todo
-      removeGreySquares();
-      selectedSquare = null;
-    } 
-    
-    // Caso 2: No había nada seleccionado antes (Primer clic)
-    else {
-      var piece = game.get(square);
-      // Solo seleccionamos si hay una pieza y es su turno
-      if (piece && piece.color === game.turn()) {
-        selectedSquare = square;
-        greySquare(selectedSquare);
-      }
+      // Nota: Si hacemos clic en una casilla vacía inválida, no hacemos nada (mantenemos selección)
     }
   });
 
@@ -407,12 +419,12 @@
   }
 
   var config = {
-    draggable: true, // Mantiene el arrastre activado
+    draggable: true,
     position: 'start',
     onDragStart: onDragStart,
     onDrop: onDrop,
     onSnapEnd: onSnapEnd,
-    // Ruta corregida (CDN robusto)
+    // CDN Robusto para imágenes
     pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@master/website/img/chesspieces/wikipedia/{piece}.png'
   };
 
@@ -422,7 +434,7 @@
   $('#resetBtn').on('click', function() {
     game.reset();
     board.start();
-    removeGreySquares();
+    removeHighlights();
     selectedSquare = null;
     updateStatus();
   });
