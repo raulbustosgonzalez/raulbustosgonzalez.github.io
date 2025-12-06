@@ -167,13 +167,11 @@
     background-image: radial-gradient(rgba(255, 255, 0, 0.8) 19%, rgba(0,0,0,0) 20%);
   }
 
-  /* Estilo para el texto de instrucción, ahora incluye la glosa */
-  .instruction-text {
-    color: #008000; /* Verde */
-    font-weight: bold;
-    font-size: 1rem;
-    line-height: 1.5;
-    margin: 5px 0 0;
+  /* Estilo para la glosa */
+  .caption-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 10px;
     text-align: center;
   }
 
@@ -256,12 +254,13 @@
     </div>
     <div class="board-container">
         <h3 style="margin:0">Try a quick game!</h3>
-        <p class="instruction-text">Drag pieces OR click to move.</p>
-        <p class="instruction-text">Yellow dots indicate legal moves for the selected piece.</p>
+        <p class="muted" style="margin:0; font-size:0.9rem">Drag pieces OR click to move.</p>
         <div id="myBoard"></div>
         <div class="game-status" id="status">White to move</div>
         <button class="btn-game" id="resetBtn">Start Over</button>
-    </div>
+        
+        <span class="caption-note">Yellow dots indicate **legal moves** for the selected piece.</span>
+        </div>
   </article>
 </section>
 
