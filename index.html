@@ -51,7 +51,7 @@
     filter:brightness(1.05) contrast(1.12) saturate(1.12);
   }
   .bg-img.show{opacity:1}
-  
+   
   #bg1{ object-position: 75% center; }
   #bg2{ object-position: var(--kasparov-x) center; transform: scale(var(--kasparov-zoom)); transform-origin: center; }
   #bg3{ object-position: center top; }
@@ -157,9 +157,14 @@
     text-align: center;
   }
 
-  /* Highlight Class para selección */
+  /* Highlight Class para selección de origen */
   .highlight-square {
-    box-shadow: inset 0 0 3px 3px yellow;
+    background: #a9a9a9;
+  }
+  
+  /* NUEVO: Clase para mostrar sugerencias de movimiento (el "punto") */
+  .hint-move {
+    background: radial-gradient(rgba(20, 85, 30, 0.5) 19%, rgba(0,0,0,0) 20%);
   }
 
   @media (max-width:820px){
@@ -246,7 +251,7 @@
         <div class="game-status" id="status">White to move</div>
         <button class="btn-game" id="resetBtn">Start Over</button>
     </div>
-    </article>
+  </article>
 </section>
 
 <p class="wrap" style="text-align:center;color:var(--muted);margin-bottom:28px">
@@ -287,7 +292,7 @@
     slides[i].classList.add('show');
   }, 7000);
 
-  /* --- CÓDIGO DEL AJEDREZ (HÍBRIDO: Drag + Click Robustos) --- */
+  /* --- CÓDIGO DEL AJEDREZ (HÍBRIDO: Drag + Click Robustos + Visualización) --- */
   var game = new Chess();
   var board = null;
   var $status = $('#status');
@@ -295,6 +300,7 @@
 
   function removeHighlights () {
     $('#myBoard .square-55d63').css('background', '');
+    $('#myBoard .square-55d63').removeClass('hint-move'); // Quitar sugerencias
   }
 
   function highlightSquare (square) {
@@ -304,6 +310,20 @@
       background = '#696969'; // Gris oscuro para negras
     }
     $square.css('background', background);
+  }
+
+  // --- NUEVO: Función para mostrar posibles movimientos ---
+  function highlightMoves (square) {
+    var moves = game.moves({
+      square: square,
+      verbose: true
+    });
+
+    if (moves.length === 0) return;
+
+    for (var i = 0; i < moves.length; i++) {
+      $('#myBoard .square-' + moves[i].to).addClass('hint-move');
+    }
   }
 
   // --- 1. Lógica al empezar a arrastrar o hacer clic en una pieza ---
@@ -316,10 +336,8 @@
       return false;
     }
 
-    // CASO ESPECIAL: Si ya tenemos una pieza seleccionada y hacemos clic en OTRA pieza (intentando capturar)
-    // El "DragStart" se dispara porque hacemos clic en la pieza enemiga.
+    // CASO ESPECIAL: Captura mediante clic
     if (selectedSquare && selectedSquare !== source) {
-      // Intentamos mover de la seleccionada a esta nueva pieza (captura)
       var move = game.move({
         from: selectedSquare,
         to: source,
@@ -327,31 +345,31 @@
       });
       
       if (move !== null) {
-        // ¡Era una captura válida! Ejecutamos el movimiento visualmente
         board.position(game.fen());
         removeHighlights();
         selectedSquare = null;
         updateStatus();
-        return false; // Cancelamos el arrastre de la pieza enemiga porque ya la comimos
+        return false; 
       } else {
-        // No era una captura válida, así que asumimos que el usuario cambió de opinión
-        // y quiere seleccionar esta nueva pieza.
+        // Cambio de pieza seleccionada
         removeHighlights();
         selectedSquare = source;
         highlightSquare(source);
-        return true; // Permitimos arrastrar esta nueva pieza
+        highlightMoves(source); // MOSTRAR SUGERENCIAS
+        return true; 
       }
     }
 
-    // Si no había nada seleccionado, seleccionamos esta pieza
+    // Selección inicial
     selectedSquare = source;
+    removeHighlights(); // Limpiar anteriores por seguridad
     highlightSquare(source);
+    highlightMoves(source); // MOSTRAR SUGERENCIAS
     return true;
   }
 
   // --- 2. Lógica al soltar la pieza ---
   function onDrop (source, target) {
-    // Si soltamos la pieza en un lugar diferente al origen (fue un arrastre real)
     if (source !== target) {
       var move = game.move({
         from: source,
@@ -360,18 +378,17 @@
       });
 
       if (move === null) {
-        return 'snapback'; // Movimiento ilegal, volver
+        removeHighlights(); // Limpiar si es inválido
+        selectedSquare = null; 
+        return 'snapback';
       }
 
-      // Movimiento legal: limpiar selección
       removeHighlights();
       selectedSquare = null;
       updateStatus();
     } 
-    // Si source === target, significa que el usuario hizo "Clic" (arrastró 0 píxeles)
-    // En este caso, NO limpiamos la selección, la dejamos resaltada para el segundo clic.
     else {
-      // Mantenemos selectedSquare y el highlight
+      // Si fue un clic (dragged 0 pixels), mantenemos el highlight y los hints
     }
   }
 
@@ -380,11 +397,9 @@
   }
 
   // --- 3. Lógica para hacer clic en casillas VACÍAS ---
-  // El evento 'click' sí funciona en casillas vacías porque no son 'draggables'
   $('#myBoard').on('click', '.square-55d63', function () {
     var square = $(this).data('square');
     
-    // Si tenemos una pieza seleccionada y hacemos clic en una casilla vacía
     if (selectedSquare) {
       var move = game.move({
         from: selectedSquare,
@@ -397,8 +412,12 @@
         removeHighlights();
         selectedSquare = null;
         updateStatus();
+      } else {
+        // Si hago clic en una casilla vacía inválida, deselecciono todo
+        // Opcional: Si quieres que solo se deseleccione al hacer clic fuera
+        // puedes comentar la línea de abajo.
+        // removeHighlights(); selectedSquare = null;
       }
-      // Nota: Si hacemos clic en una casilla vacía inválida, no hacemos nada (mantenemos selección)
     }
   });
 
@@ -424,7 +443,6 @@
     onDragStart: onDragStart,
     onDrop: onDrop,
     onSnapEnd: onSnapEnd,
-    // CDN Robusto para imágenes
     pieceTheme: 'https://cdn.jsdelivr.net/gh/oakmac/chessboardjs@master/website/img/chesspieces/wikipedia/{piece}.png'
   };
 
