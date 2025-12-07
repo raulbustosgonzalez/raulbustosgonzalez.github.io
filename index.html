@@ -51,7 +51,7 @@
     filter:brightness(1.05) contrast(1.12) saturate(1.12);
   }
   .bg-img.show{opacity:1}
-   
+    
   #bg1{ object-position: 75% center; }
   #bg2{ object-position: var(--kasparov-x) center; transform: scale(var(--kasparov-zoom)); transform-origin: center; }
   #bg3{ object-position: center top; }
@@ -155,19 +155,31 @@
     font-weight: bold;
     color: var(--ink);
     text-align: center;
+    max-width: 95%; 
   }
 
   /* Highlight Class para selección de origen */
   .highlight-square {
     box-shadow: inset 0 0 3px 3px yellow;
   }
-  
-  /* Clase visual para el "punto" central (Visualización de movimientos) - AMARILLO */
+   
+  /* Clase visual para el "punto" central (Visualización de movimientos VACÍOS) - AMARILLO */
   .hint-move {
     background-image: radial-gradient(rgba(255, 255, 0, 0.8) 19%, rgba(0,0,0,0) 20%);
   }
 
-  /* Estilo para el texto de instrucción, ahora incluye la glosa */
+  /* Clase visual para movimientos de CAPTURA - ANILLO ROJO */
+  .capture-move {
+    box-shadow: inset 0 0 4px 4px rgba(255, 0, 0, 0.8);
+    background-color: rgba(255, 0, 0, 0.2);
+  }
+
+  /* Clase visual para el Rey en Jaque - FONDO ROJO */
+  .in-check {
+    background: rgba(255, 65, 65, 0.8) !important;
+  }
+
+  /* Estilo para el texto de instrucción */
   .instruction-text {
     color: #008000; /* Verde */
     font-weight: bold;
@@ -257,7 +269,7 @@
     <div class="board-container">
         <h3 style="margin:0">Try a quick game!</h3>
         <p class="instruction-text">Drag pieces OR click to move.</p>
-        <p class="instruction-text">Yellow dots indicate permitted and legal movements for the selected piece.</p>
+        <p class="instruction-text">Yellow dots indicate permitted moves. <span style="color:red; font-weight:800;">Red ring indicates you can capture the piece if you want.</span></p>
         <div id="myBoard"></div>
         <div class="game-status" id="status">White to move</div>
         <button class="btn-game" id="resetBtn">Start Over</button>
@@ -307,51 +319,52 @@
   var game = new Chess();
   var board = null;
   var $status = $('#status');
-  var selectedSquare = null; // Estado global para saber si tenemos una pieza "en mano"
+  var selectedSquare = null; 
+  var checkSoundPlayed = false; 
 
   function removeHighlights () {
     $('#myBoard .square-55d63').css('background', '');
-    // Removemos también los puntos de ayuda
-    $('#myBoard .square-55d63').removeClass('hint-move');
+    $('#myBoard .square-55d63').removeClass('hint-move capture-move in-check');
   }
 
   function highlightSquare (square) {
     var $square = $('#myBoard .square-' + square);
-    var background = '#a9a9a9'; // Gris para blancas
+    var background = '#a9a9a9'; 
     if ($square.hasClass('black-3c85d')) {
-      background = '#696969'; // Gris oscuro para negras
+      background = '#696969'; 
     }
     $square.css('background', background);
   }
 
-  // --- FUNCIÓN DE PUNTOS DE AYUDA (Visualización de movimientos) ---
+  // --- FUNCIÓN DE PUNTOS/ANILLOS (Visualización de movimientos) ---
   function highlightDots (square) {
-    // Obtener movimientos legales desde esa casilla
     var moves = game.moves({
       square: square,
       verbose: true
     });
 
-    // Si no hay movimientos, salir
     if (moves.length === 0) return;
 
-    // Recorrer los movimientos y agregar la clase 'hint-move'
     for (var i = 0; i < moves.length; i++) {
-      $('#myBoard .square-' + moves[i].to).addClass('hint-move');
+      // Si es captura (o en-passant)
+      if (moves[i].flags.includes('c') || moves[i].flags.includes('e')) {
+         // Añadir clase capture-move (anillo rojo)
+         $('#myBoard .square-' + moves[i].to).addClass('capture-move');
+      } else {
+         // Añadir clase hint-move (punto amarillo)
+         $('#myBoard .square-' + moves[i].to).addClass('hint-move');
+      }
     }
   }
 
-  // --- 1. Lógica al empezar a arrastrar o hacer clic en una pieza ---
   function onDragStart (source, piece, position, orientation) {
     if (game.game_over()) return false;
     
-    // Solo permitir mover piezas del turno actual
     if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
         (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
       return false;
     }
 
-    // CASO ESPECIAL: Captura mediante clic
     if (selectedSquare && selectedSquare !== source) {
       var move = game.move({
         from: selectedSquare,
@@ -366,24 +379,23 @@
         updateStatus();
         return false; 
       } else {
-        // Cambio de pieza seleccionada
         removeHighlights();
         selectedSquare = source;
         highlightSquare(source);
-        highlightDots(source); // <--- AQUI SE PINTAN LOS PUNTOS
+        highlightDots(source); 
+        updateStatus(); 
         return true; 
       }
     }
 
-    // Selección inicial
     selectedSquare = source;
-    removeHighlights(); // Limpiar anteriores por seguridad
+    removeHighlights(); 
     highlightSquare(source);
-    highlightDots(source); // <--- AQUI SE PINTAN LOS PUNTOS
+    highlightDots(source); 
+    updateStatus(); 
     return true;
   }
 
-  // --- 2. Lógica al soltar la pieza ---
   function onDrop (source, target) {
     if (source !== target) {
       var move = game.move({
@@ -393,8 +405,9 @@
       });
 
       if (move === null) {
-        removeHighlights(); // Limpiar si es inválido
+        removeHighlights(); 
         selectedSquare = null; 
+        updateStatus(); 
         return 'snapback';
       }
 
@@ -402,16 +415,12 @@
       selectedSquare = null;
       updateStatus();
     } 
-    else {
-      // Si fue un clic (dragged 0 pixels), mantenemos el highlight y los dots
-    }
   }
 
   function onSnapEnd () {
     board.position(game.fen());
   }
 
-  // --- 3. Lógica para hacer clic en casillas VACÍAS ---
   $('#myBoard').on('click', '.square-55d63', function () {
     var square = $(this).data('square');
     
@@ -427,8 +436,6 @@
         removeHighlights();
         selectedSquare = null;
         updateStatus();
-      } else {
-        // Clic en vacío sin movimiento válido
       }
     }
   });
@@ -438,16 +445,77 @@
     var moveColor = 'White';
     if (game.turn() === 'b') moveColor = 'Black';
 
+    // Lógica para alumbrar al Rey en Rojo si está en Jaque
+    if (game.in_check()) {
+        var boardState = game.board();
+        var kingColor = game.turn();
+        var kingSquare = null;
+        
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
+                var piece = boardState[i][j];
+                if (piece && piece.type === 'k' && piece.color === kingColor) {
+                    var col = String.fromCharCode('a'.charCodeAt(0) + j);
+                    var row = 8 - i;
+                    kingSquare = col + row;
+                    break;
+                }
+            }
+            if (kingSquare) break;
+        }
+        
+        if (kingSquare) {
+             $('#myBoard .square-' + kingSquare).addClass('in-check');
+        }
+
+        // --- SONIDO DE CHECK (VOZ FEMENINA/SUAVE) ---
+        if (!checkSoundPlayed) {
+          var utterance = new SpeechSynthesisUtterance("Check!");
+          
+          // Obtener voces disponibles
+          var voices = window.speechSynthesis.getVoices();
+          
+          // Intentar buscar voces femeninas populares (Google US, Microsoft Zira, Samantha)
+          var femaleVoice = voices.find(function(v) {
+            return v.name.includes('Google US English') || 
+                   v.name.includes('Zira') || 
+                   v.name.includes('Samantha');
+          });
+
+          if (femaleVoice) {
+            utterance.voice = femaleVoice;
+          }
+
+          // Ajustes para suavizar la voz (pitch más alto = más femenina/aguda)
+          utterance.pitch = 1.2; 
+          utterance.rate = 0.9;  // Un poco más pausado
+
+          window.speechSynthesis.speak(utterance);
+          checkSoundPlayed = true; 
+        }
+
+    } else {
+        $('#myBoard .square-55d63').removeClass('in-check');
+        checkSoundPlayed = false;
+    }
+
     if (game.in_checkmate()) {
       status = 'Game over, ' + moveColor + ' is in checkmate.';
     } else if (game.in_draw()) {
       status = 'Game over, drawn position';
     } else {
       status = moveColor + ' to move';
-      if (game.in_check()) status += ', ' + moveColor + ' is in check';
+      if (game.in_check()) {
+        status += ', ' + moveColor + ' is in check.';
+        // AVISO EN ROJO
+        status += ' <span style="color:red; font-weight:bold">(To escape: move the King, block, or capture the attacking piece)</span>';
+      }
     }
-    $status.text(status);
+    $status.html(status);
   }
+
+  // Cargar voces al inicio para asegurar disponibilidad en Chrome
+  window.speechSynthesis.getVoices();
 
   var config = {
     draggable: true,
@@ -466,6 +534,7 @@
     board.start();
     removeHighlights();
     selectedSquare = null;
+    checkSoundPlayed = false;
     updateStatus();
   });
 
