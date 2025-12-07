@@ -167,6 +167,17 @@
     background-image: radial-gradient(rgba(255, 255, 0, 0.8) 19%, rgba(0,0,0,0) 20%);
   }
 
+  /* Clase visual para la CAPTURA (Punto Rojo) - NUEVA */
+  .hint-capture {
+    background-image: radial-gradient(rgba(255, 0, 0, 0.8) 19%, rgba(0,0,0,0) 20%);
+  }
+
+  /* Clase visual para el REY en JAQUE (Borde Rojo) - NUEVA */
+  .in-check {
+    box-shadow: inset 0 0 0 4px red;
+  }
+
+
   /* Estilo para el texto de instrucción, ahora incluye la glosa */
   .instruction-text {
     color: #008000; /* Verde */
@@ -307,40 +318,66 @@
   var game = new Chess();
   var board = null;
   var $status = $('#status');
-  var selectedSquare = null; // Estado global para saber si tenemos una pieza "en mano"
+  var selectedSquare = null; 
 
+  // Función para quitar todos los highlights (incluyendo jaque)
   function removeHighlights () {
     $('#myBoard .square-55d63').css('background', '');
-    // Removemos también los puntos de ayuda
     $('#myBoard .square-55d63').removeClass('hint-move');
+    $('#myBoard .square-55d63').removeClass('hint-capture'); // Nuevo: Quitar capturas
+    $('#myBoard .square-55d63').removeClass('in-check'); // Nuevo: Quitar jaque
   }
 
+  // Función para resaltar la casilla de origen
   function highlightSquare (square) {
     var $square = $('#myBoard .square-' + square);
-    var background = '#a9a9a9'; // Gris para blancas
+    var background = '#a9a9a9'; 
     if ($square.hasClass('black-3c85d')) {
-      background = '#696969'; // Gris oscuro para negras
+      background = '#696969'; 
     }
     $square.css('background', background);
   }
 
-  // --- FUNCIÓN DE PUNTOS DE AYUDA (Visualización de movimientos) ---
+  // --- FUNCIÓN DE PUNTOS DE AYUDA (Movimientos y Capturas) ---
   function highlightDots (square) {
-    // Obtener movimientos legales desde esa casilla
     var moves = game.moves({
       square: square,
       verbose: true
     });
 
-    // Si no hay movimientos, salir
     if (moves.length === 0) return;
 
-    // Recorrer los movimientos y agregar la clase 'hint-move'
     for (var i = 0; i < moves.length; i++) {
-      $('#myBoard .square-' + moves[i].to).addClass('hint-move');
+      var targetSquare = moves[i].to;
+      var $target = $('#myBoard .square-' + targetSquare);
+
+      if (moves[i].flags.includes('c') || moves[i].flags.includes('e')) {
+        // La bandera 'c' significa captura, 'e' significa captura al paso (en passant)
+        $target.addClass('hint-capture'); // Aplica punto rojo para capturas
+      } else {
+        $target.addClass('hint-move'); // Aplica punto amarillo para movimientos normales
+      }
     }
   }
 
+  // --- Lógica de la pieza en jaque ---
+  function highlightCheck() {
+      if (game.in_check()) {
+          var turn = game.turn();
+          var kingPiece = (turn === 'w') ? 'wK' : 'bK';
+          var boardPosition = game.fen().split(' ')[0]; // Obtener solo la parte de la posición
+          var pieces = Chess.Square.map(boardPosition); // Mapear FEN a un objeto de piezas
+
+          // Iterar sobre las casillas para encontrar al Rey
+          for (var square in pieces) {
+              if (pieces[square] === kingPiece) {
+                  $('#myBoard .square-' + square).addClass('in-check');
+                  break; 
+              }
+          }
+      }
+  }
+  
   // --- 1. Lógica al empezar a arrastrar o hacer clic en una pieza ---
   function onDragStart (source, piece, position, orientation) {
     if (game.game_over()) return false;
@@ -351,7 +388,7 @@
       return false;
     }
 
-    // CASO ESPECIAL: Captura mediante clic
+    // CASO ESPECIAL: Captura o movimiento mediante clic
     if (selectedSquare && selectedSquare !== source) {
       var move = game.move({
         from: selectedSquare,
@@ -366,20 +403,20 @@
         updateStatus();
         return false; 
       } else {
-        // Cambio de pieza seleccionada
+        // Cambio de pieza seleccionada (si la nueva casilla tiene una pieza propia)
         removeHighlights();
         selectedSquare = source;
         highlightSquare(source);
-        highlightDots(source); // <--- AQUI SE PINTAN LOS PUNTOS
+        highlightDots(source); 
         return true; 
       }
     }
 
     // Selección inicial
     selectedSquare = source;
-    removeHighlights(); // Limpiar anteriores por seguridad
+    removeHighlights(); 
     highlightSquare(source);
-    highlightDots(source); // <--- AQUI SE PINTAN LOS PUNTOS
+    highlightDots(source); 
     return true;
   }
 
@@ -393,7 +430,7 @@
       });
 
       if (move === null) {
-        removeHighlights(); // Limpiar si es inválido
+        removeHighlights(); 
         selectedSquare = null; 
         return 'snapback';
       }
@@ -428,11 +465,16 @@
         selectedSquare = null;
         updateStatus();
       } else {
-        // Clic en vacío sin movimiento válido
+        // Clic en vacío sin movimiento válido: Ignorar o deseleccionar si la casilla no es un movimiento legal
+        if (!$('#myBoard .square-' + square).hasClass('hint-move') && !$('#myBoard .square-' + square).hasClass('hint-capture')) {
+             removeHighlights();
+             selectedSquare = null;
+        }
       }
     }
   });
 
+  // La función updateStatus ahora llama a highlightCheck
   function updateStatus () {
     var status = '';
     var moveColor = 'White';
@@ -447,6 +489,9 @@
       if (game.in_check()) status += ', ' + moveColor + ' is in check';
     }
     $status.text(status);
+    
+    // Ejecutar highlightCheck después de cada movimiento
+    highlightCheck();
   }
 
   var config = {
